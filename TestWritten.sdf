@@ -1,0 +1,14 @@
+Test
+.rootInnerAttribute : Root inner-attribute value.
+-
+testAttribute : Test attribute value.
+.inner : Test inner-attribute value.
+.inner2 : Test inner-attribute value 2.
+!testCategory : 
+.categoryinner : Category inner-attribute value.
+;nested2 : Nested attribute value 2.
+;nested : 
+.nestedinner : Nested inner-attribute value.
+;;nestednested : Nested-nested attribute value.
+;;;nestednestednested : Nested-nested-nested attribute value.
+.verynestedinner : Nested-nested-nested inner-attribute value.
