@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SDFReader {
     private final BufferedReader reader;
@@ -92,12 +93,8 @@ public class SDFReader {
         reader.close();
     }
 
-    private List<String> getLinesInInput() throws IOException {
-        final List<String> lines = new ArrayList<>();
-        while (reader.ready()) {
-            lines.add(reader.readLine());
-        }
-        return lines;
+    private List<String> getLinesInInput() {
+        return reader.lines().map(s -> s.replaceAll("\\\\n", "\n")).collect(Collectors.toList());
     }
 
     private String[] getAttributeProperties(String line) {
