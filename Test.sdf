@@ -2,6 +2,7 @@ Test
 .rootInnerAttribute    : Root inner-attribute value.
 -
 testAttribute          : Test attribute value.
+testAttribute          : Same attribute but different :O
 .inner                 : Test inner-attribute value.
 .inner2                : Test inner-attribute value 2.
 !testCategory

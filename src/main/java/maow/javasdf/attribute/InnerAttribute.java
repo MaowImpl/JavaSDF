@@ -1,7 +1,7 @@
 package maow.javasdf.attribute;
 
-import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 public class InnerAttribute extends AbstractAttribute {
     public InnerAttribute(String name, String value) {
@@ -13,12 +13,12 @@ public class InnerAttribute extends AbstractAttribute {
     }
 
     @Override
-    public Collection<InnerAttribute> getInnerAttributes() {
+    public List<InnerAttribute> getInnerAttributes() {
         return Collections.emptyList();
     }
 
     @Override
-    public InnerAttribute getInnerAttribute(String name) {
+    public InnerAttribute getInnerAttribute(int index) {
         return null;
     }
 

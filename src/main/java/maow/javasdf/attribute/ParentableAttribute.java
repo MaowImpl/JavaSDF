@@ -1,11 +1,10 @@
 package maow.javasdf.attribute;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class ParentableAttribute extends AbstractAttribute {
-    protected final Map<String, NestedAttribute> nestedAttributes = new HashMap<>();
+    protected final List<NestedAttribute> nestedAttributes = new ArrayList<>();
 
     public ParentableAttribute(String name, String value) {
         super(name, value);
@@ -15,15 +14,15 @@ public abstract class ParentableAttribute extends AbstractAttribute {
         super(name);
     }
 
-    public Collection<NestedAttribute> getNestedAttributes() {
-        return nestedAttributes.values();
+    public List<NestedAttribute> getNestedAttributes() {
+        return nestedAttributes;
     }
 
-    public NestedAttribute getNestedAttribute(String name) {
-        return nestedAttributes.get(name);
+    public NestedAttribute getNestedAttribute(int index) {
+        return nestedAttributes.get(index);
     }
 
     public void addNestedAttribute(NestedAttribute nestedAttribute) {
-        nestedAttributes.put(nestedAttribute.getName(), nestedAttribute);
+        nestedAttributes.add(nestedAttribute);
     }
 }

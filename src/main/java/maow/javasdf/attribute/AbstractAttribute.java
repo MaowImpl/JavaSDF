@@ -1,13 +1,12 @@
 package maow.javasdf.attribute;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AbstractAttribute implements Attribute {
     private final String name;
     private String value;
-    private final Map<String, InnerAttribute> innerAttributes = new HashMap<>();
+    private final List<InnerAttribute> innerAttributes = new ArrayList<>();
 
     public AbstractAttribute(String name, String value) {
         this.name = name;
@@ -33,15 +32,15 @@ public abstract class AbstractAttribute implements Attribute {
         this.value = value;
     }
 
-    public Collection<InnerAttribute> getInnerAttributes() {
-        return innerAttributes.values();
+    public List<InnerAttribute> getInnerAttributes() {
+        return innerAttributes;
     }
 
-    public InnerAttribute getInnerAttribute(String name) {
-        return innerAttributes.get(name);
+    public InnerAttribute getInnerAttribute(int index) {
+        return innerAttributes.get(index);
     }
 
     public void addInnerAttribute(InnerAttribute innerAttribute) {
-        innerAttributes.put(innerAttribute.getName(), innerAttribute);
+        innerAttributes.add(innerAttribute);
     }
 }
