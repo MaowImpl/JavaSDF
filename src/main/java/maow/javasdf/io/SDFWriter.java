@@ -6,12 +6,6 @@ import maow.javasdf.document.Document;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Collection;
-
-// SDFWriter is currently broken.
-// It will be fixed in a later release, but seeing as this library's main goal is *reading* SDF, it's not a top priority.
-// If you want to go ahead and fix it yourself, make sure to send a PR my way.
-// The main error is just how it writes nested attributes, they're pretty broken atm, suffered from the same issue SDFReader previously did.
 
 public class SDFWriter {
     private final BufferedWriter writer;
@@ -38,25 +32,25 @@ public class SDFWriter {
                     writer.newLine();
                 }
                 if (attribute instanceof CategoryAttribute) {
-                    Collection<NestedAttribute> nestedAttributes = ((CategoryAttribute) attribute).getNestedAttributes();
-                    while (nestedAttributes.size() > 0) {
-                        for (NestedAttribute nestedAttribute : nestedAttributes) {
-                            writer.write(nestedAttribute.getName() + " : " + nestedAttribute.getValue());
-                            writer.newLine();
-                            nestedAttributes = nestedAttribute.getNestedAttributes();
-                            for (InnerAttribute nestedInnerAttribute : nestedAttribute.getInnerAttributes()) {
-                                writer.write(nestedInnerAttribute.getName() + " : " + nestedInnerAttribute.getValue());
-                                writer.newLine();
-                            }
-                        }
+                    for (NestedAttribute nestedAttribute : ((CategoryAttribute) attribute).getNestedAttributes()) {
+                        writeNestedAttribute(nestedAttribute);
                     }
                 }
             }
         }
+        writer.flush();
     }
 
-    public void flush() throws IOException {
-        writer.flush();
+    private void writeNestedAttribute(NestedAttribute nestedAttribute) throws IOException {
+        writer.write(nestedAttribute.getName() + " : " + nestedAttribute.getValue());
+        writer.newLine();
+        for (InnerAttribute innerAttribute : nestedAttribute.getInnerAttributes()) {
+            writer.write(innerAttribute.getName() + " : " + innerAttribute.getValue());
+            writer.newLine();
+        }
+        for (NestedAttribute nestedAttribute1 : nestedAttribute.getNestedAttributes()) {
+            writeNestedAttribute(nestedAttribute1);
+        }
     }
 
     public void close() throws IOException {

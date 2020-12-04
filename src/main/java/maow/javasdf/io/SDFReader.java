@@ -40,9 +40,11 @@ public class SDFReader {
         final List<AbstractAttribute> nestedTree = new ArrayList<>();
         int indent = 0;
         for (int i = headerEnd + 1; i < lines.size(); i++) {
+
             final String line = lines.get(i);
             if (line.startsWith("#")) continue;
             if (!line.startsWith(".") && !line.startsWith(";")) {
+
                 if (activeAttribute != null) {
                     attributes.add(activeAttribute);
                     nestedTree.clear();
@@ -84,7 +86,11 @@ public class SDFReader {
                 }
             }
         }
-        if (activeAttribute != null) attributes.add(activeAttribute);
+        if (activeAttribute != null) {
+            if (!attributes.contains(activeAttribute)) {
+                attributes.add(activeAttribute);
+            }
+        }
 
         return new Document(name, rootInnerAttributes, attributes);
     }
