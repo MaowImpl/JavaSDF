@@ -1,25 +1,7 @@
 package maow.javasdf.attribute;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-public class CategoryAttribute extends AbstractAttribute {
-    private final Map<String, NestedAttribute> nestedAttributes = new HashMap<>();
-
+public class CategoryAttribute extends ParentableAttribute {
     public CategoryAttribute(String name) {
         super(name);
-    }
-
-    public Collection<NestedAttribute> getNestedAttributes() {
-        return nestedAttributes.values();
-    }
-
-    public NestedAttribute getNestedAttribute(String name) {
-        return nestedAttributes.get(name);
-    }
-
-    public void addNestedAttribute(NestedAttribute nestedAttribute) {
-        nestedAttributes.put(nestedAttribute.getName(), nestedAttribute);
     }
 }

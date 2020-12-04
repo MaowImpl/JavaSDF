@@ -40,44 +40,50 @@ public class SDFReader {
         int indent = 0;
         for (int i = headerEnd + 1; i < lines.size(); i++) {
             final String line = lines.get(i);
-            if (!line.startsWith("#")) {
-                if (!line.startsWith(".") && !line.startsWith(";")) {
-                    if (activeAttribute != null) {
-                        attributes.add(activeAttribute);
-                        nestedTree.clear();
-                    }
-                    final String[] attributeProperties = getAttributeProperties(line);
-                    if (line.startsWith("!")) {
-                        activeAttribute = new CategoryAttribute(attributeProperties[0]);
-                        nestedTree.add(activeAttribute);
+            if (line.startsWith("#")) continue;
+            if (!line.startsWith(".") && !line.startsWith(";")) {
+                if (activeAttribute != null) {
+                    attributes.add(activeAttribute);
+                    nestedTree.clear();
+                }
+                final String[] attributeProperties = getAttributeProperties(line);
+                if (line.startsWith("!")) {
+                    activeAttribute = new CategoryAttribute(attributeProperties[0]);
+                    nestedTree.add(activeAttribute);
+                } else {
+                    activeAttribute = new BasicAttribute(attributeProperties[0], attributeProperties[1]);
+                }
+                continue;
+            }
+            if (activeAttribute != null) {
+                final String[] attributeProperties = getAttributeProperties(line);
+                if (line.startsWith(".")) {
+                    final InnerAttribute innerAttribute = new InnerAttribute(attributeProperties[0], attributeProperties[1]);
+                    if (nestedTree.size() == 0) {
+                        activeAttribute.addInnerAttribute(innerAttribute);
                         continue;
                     }
-                    activeAttribute = new BasicAttribute(attributeProperties[0], attributeProperties[1]);
-                } else if (activeAttribute != null) {
-                    if (line.startsWith(".")) {
-                        final String[] innerAttributeProperties = getAttributeProperties(line);
-                        final InnerAttribute innerAttribute = new InnerAttribute(innerAttributeProperties[0], innerAttributeProperties[1]);
-                        if (nestedTree.size() == 0) {
-                            activeAttribute.addInnerAttribute(innerAttribute);
-                            continue;
-                        }
-                        nestedTree.get(indent).addInnerAttribute(innerAttribute);
-                    } else if (line.startsWith(";") && activeAttribute instanceof CategoryAttribute) {
-                        final String[] nestedAttributeProperties = getAttributeProperties(line);
-                        final NestedAttribute nestedAttribute = new NestedAttribute(nestedAttributeProperties[0], nestedAttributeProperties[1]);
-                        indent = StringUtils.countMatches(nestedAttribute.getName(), ";");
+                    nestedTree.get(indent).addInnerAttribute(innerAttribute);
+                } else if (line.startsWith(";") && activeAttribute instanceof CategoryAttribute) {
+                    final String[] nestedAttributeProperties = getAttributeProperties(line);
+                    final NestedAttribute nestedAttribute = new NestedAttribute(nestedAttributeProperties[0], nestedAttributeProperties[1]);
+                    indent = StringUtils.countMatches(nestedAttribute.getName(), ";");
 
-                        nestedTree.add(nestedAttribute);
-                        final AbstractAttribute attribute = nestedTree.get(indent - 1);
-                        if (attribute instanceof CategoryAttribute) {
-                            ((CategoryAttribute) attribute).addNestedAttribute(nestedAttribute);
-                            continue;
-                        }
-                        ((NestedAttribute) attribute).addNestedAttribute(nestedAttribute);
+                    while (indent + 1 >= nestedTree.size()) {
+                        nestedTree.add(null);
                     }
+
+                    nestedTree.set(indent, nestedAttribute);
+                    final AbstractAttribute attribute = nestedTree.get(indent - 1);
+                    if (attribute instanceof CategoryAttribute) {
+                        ((CategoryAttribute) attribute).addNestedAttribute(nestedAttribute);
+                        continue;
+                    }
+                    ((NestedAttribute) attribute).addNestedAttribute(nestedAttribute);
                 }
             }
         }
+        if (activeAttribute != null) attributes.add(activeAttribute);
 
         return new Document(name, rootInnerAttributes, attributes);
     }

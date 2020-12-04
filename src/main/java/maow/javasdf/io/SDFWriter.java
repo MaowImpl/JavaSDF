@@ -8,6 +8,11 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
 
+// SDFWriter is currently broken.
+// It will be fixed in a later release, but seeing as this library's main goal is *reading* SDF, it's not a top priority.
+// If you want to go ahead and fix it yourself, make sure to send a PR my way.
+// The main error is just how it writes nested attributes, they're pretty broken atm, suffered from the same issue SDFReader previously did.
+
 public class SDFWriter {
     private final BufferedWriter writer;
 
