@@ -76,7 +76,7 @@ public class SDFReader extends BufferedReader {
         final String line = lines.get(index);
         if (line.startsWith("#")) return null;
         final String[] attributeProperties = getAttributeProperties(line);
-        return AttributeFactory.getAttribute(line.substring(0, 1), attributeProperties);
+        return AttributeFactory.getAttribute(line.substring(0, 0), attributeProperties);
     }
 
     public void setActiveAttribute(Attribute attribute) {
