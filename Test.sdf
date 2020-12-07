@@ -20,4 +20,5 @@ testAttribute          : Same attribute but different :O
 .inner1-2              : Inner 1-2
 ;;nested2-3            : Nested-nested attribute value.
 .inner2-3              : Inner 2-3
+aDecentlyLongAttributeName : value.
 # Comment.

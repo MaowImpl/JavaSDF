@@ -1,7 +1,7 @@
 package maow.javasdf.document;
 
 import maow.javasdf.attribute.Attribute;
-import maow.javasdf.attribute.InnerAttribute;
+import maow.javasdf.attribute.types.InnerAttribute;
 
 import java.util.List;
 

@@ -1,7 +1,14 @@
 package maow.javasdf.io;
 
 import maow.javasdf.attribute.*;
+import maow.javasdf.attribute.holder.InnerHolder;
+import maow.javasdf.attribute.holder.NestedHolder;
+import maow.javasdf.attribute.types.BasicAttribute;
+import maow.javasdf.attribute.types.CategoryAttribute;
+import maow.javasdf.attribute.types.InnerAttribute;
+import maow.javasdf.attribute.types.NestedAttribute;
 import maow.javasdf.document.Document;
+import maow.javasdf.util.AttributeFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
@@ -10,104 +17,110 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-public class SDFReader {
-    private final BufferedReader reader;
+public class SDFReader extends BufferedReader {
+    private final List<String> lines = getLinesAsList();
+    private final List<ParentAttribute> nestedTree = new ArrayList<>();
+
+    private int headerEnd = 0;
+    private int nestLevel = 0;
+    private Attribute activeAttribute = null;
 
     public SDFReader(Reader in) {
-        this.reader = new BufferedReader(in);
+        super(in);
     }
 
     public Document getDocument() throws IOException {
-        final List<String> lines = getLinesInInput();
+        return new Document(getDocumentName(), getRootInnerAttributes(), getAttributes());
+    }
 
+    public String getDocumentName() throws IOException {
         final String name = lines.get(0);
-        final List<InnerAttribute> rootInnerAttributes = new ArrayList<>();
-        final List<Attribute> attributes = new ArrayList<>();
+        if (name.startsWith(";") || name.startsWith(".") || name.startsWith("!") || name.startsWith("-")) {
+            throw new IOException("Illegal prefix for document name.");
+        }
+        return name;
+    }
 
-        int headerEnd = 0;
+    public List<InnerAttribute> getRootInnerAttributes() {
+        final List<InnerAttribute> rootInnerAttributes = new ArrayList<>();
         for (int i = 1; i < lines.size(); i++) {
             final String line = lines.get(i);
             if (line.equals("-")) {
                 headerEnd = i;
                 break;
             }
-            final String[] attributeProperties = getAttributeProperties(line);
-            rootInnerAttributes.add(new InnerAttribute(attributeProperties[0], attributeProperties[1]));
+            rootInnerAttributes.add((InnerAttribute) AttributeFactory.getAttribute(".", getAttributeProperties(line)));
         }
+        return rootInnerAttributes;
+    }
 
-        AbstractAttribute activeAttribute = null;
-        final List<AbstractAttribute> nestedTree = new ArrayList<>();
-        int indent = 0;
+    public List<Attribute> getAttributes() throws IOException {
+        final List<Attribute> attributes = new ArrayList<>();
         for (int i = headerEnd + 1; i < lines.size(); i++) {
-
-            final String line = lines.get(i);
-            if (line.startsWith("#")) continue;
-            if (!line.startsWith(".") && !line.startsWith(";")) {
-
-                if (activeAttribute != null) {
-                    attributes.add(activeAttribute);
-                    nestedTree.clear();
-                }
-                final String[] attributeProperties = getAttributeProperties(line);
-                if (line.startsWith("!")) {
-                    activeAttribute = new CategoryAttribute(attributeProperties[0]);
-                    nestedTree.add(activeAttribute);
-                } else {
-                    activeAttribute = new BasicAttribute(attributeProperties[0], attributeProperties[1]);
-                }
-                continue;
-            }
-            if (activeAttribute != null) {
-                final String[] attributeProperties = getAttributeProperties(line);
-                if (line.startsWith(".")) {
-                    final InnerAttribute innerAttribute = new InnerAttribute(attributeProperties[0], attributeProperties[1]);
-                    if (nestedTree.size() == 0) {
-                        activeAttribute.addInnerAttribute(innerAttribute);
-                        continue;
-                    }
-                    nestedTree.get(indent).addInnerAttribute(innerAttribute);
-                } else if (line.startsWith(";") && activeAttribute instanceof CategoryAttribute) {
-                    final String[] nestedAttributeProperties = getAttributeProperties(line);
-                    final NestedAttribute nestedAttribute = new NestedAttribute(nestedAttributeProperties[0], nestedAttributeProperties[1]);
-                    indent = StringUtils.countMatches(nestedAttribute.getName(), ";");
-
-                    while (indent + 1 >= nestedTree.size()) {
-                        nestedTree.add(null);
-                    }
-
-                    nestedTree.set(indent, nestedAttribute);
-                    final AbstractAttribute attribute = nestedTree.get(indent - 1);
-                    if (attribute instanceof CategoryAttribute) {
-                        ((CategoryAttribute) attribute).addNestedAttribute(nestedAttribute);
-                        continue;
-                    }
-                    ((NestedAttribute) attribute).addNestedAttribute(nestedAttribute);
-                }
+            final Attribute attribute = getAttribute(i);
+            if (attribute != null) {
+                attribute.read(this, attributes);
             }
         }
-        if (activeAttribute != null) {
-            if (!attributes.contains(activeAttribute)) {
-                attributes.add(activeAttribute);
+        return attributes;
+    }
+
+    public void resetNestedTree() {
+        nestLevel = 0;
+        nestedTree.clear();
+    }
+
+    public Attribute getAttribute(int index) {
+        final String line = lines.get(index);
+        if (line.startsWith("#")) return null;
+        final String[] attributeProperties = getAttributeProperties(line);
+        return AttributeFactory.getAttribute(line.substring(0, 1), attributeProperties);
+    }
+
+    public void setActiveAttribute(Attribute attribute) {
+        this.activeAttribute = attribute;
+    }
+
+    public void addCategoryAttribute(CategoryAttribute categoryAttribute) {
+        nestedTree.add(categoryAttribute);
+    }
+
+    public void addInnerAttribute(InnerAttribute innerAttribute) {
+        if (activeAttribute != null && activeAttribute instanceof InnerHolder) {
+            InnerHolder innerHolder = (InnerHolder) activeAttribute;
+            if (nestedTree.size() == 0) {
+                innerHolder.addInnerAttribute(innerAttribute);
+                return;
             }
+            nestedTree.get(nestLevel).addInnerAttribute(innerAttribute);
         }
-
-        return new Document(name, rootInnerAttributes, attributes);
     }
 
-    public void close() throws IOException {
-        reader.close();
+    public void addNestedAttribute(NestedAttribute nestedAttribute) {
+        nestLevel = StringUtils.countMatches(nestedAttribute.getName(), ";");
+        while (nestLevel + 1 >= nestedTree.size()) {
+            nestedTree.add(null);
+        }
+        nestedTree.set(nestLevel, nestedAttribute);
+        nestedTree.get(nestLevel - 1).addNestedAttribute(nestedAttribute);
     }
 
-    private List<String> getLinesInInput() {
-        return reader.lines().map(s -> s.replaceAll("\\\\n", "\n")).collect(Collectors.toList());
+    @Override
+    public Stream<String> lines() {
+        return super.lines().map(s -> s.replaceAll("\\\\n", "\n"));
+    }
+
+    public List<String> getLinesAsList() {
+        return lines().collect(Collectors.toList());
     }
 
     private String[] getAttributeProperties(String line) {
-        final String[] tempProperties = new String[2];
-        final String[] attributeProperties = line.split(":", 2);
-        tempProperties[0] = attributeProperties[0].trim();
-        tempProperties[1] = (attributeProperties.length == 2) ? attributeProperties[1].trim() : "";
-        return tempProperties;
+        final String[] attributeProperties = new String[2];
+        final String[] tempProperties = line.split(":", 2);
+        attributeProperties[0] = tempProperties[0].trim();
+        attributeProperties[1] = (tempProperties.length == 2) ? tempProperties[1].trim() : "";
+        return attributeProperties;
     }
 }
