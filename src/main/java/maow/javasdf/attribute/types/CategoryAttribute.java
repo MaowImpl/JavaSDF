@@ -1,12 +1,10 @@
 package maow.javasdf.attribute.types;
 
-import maow.javasdf.attribute.Attribute;
 import maow.javasdf.attribute.ParentAttribute;
 import maow.javasdf.io.SDFReader;
 import maow.javasdf.io.SDFWriter;
 
 import java.io.IOException;
-import java.util.List;
 
 public class CategoryAttribute extends ParentAttribute {
     public CategoryAttribute(String name) {
@@ -23,10 +21,10 @@ public class CategoryAttribute extends ParentAttribute {
     }
 
     @Override
-    public void read(SDFReader reader, List<Attribute> attributes) {
+    public void read(SDFReader reader) {
         reader.resetNestedTree();
         reader.setActiveAttribute(this);
         reader.addCategoryAttribute(this);
-        attributes.add(this);
+        reader.addAttribute(this);
     }
 }

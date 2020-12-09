@@ -1,12 +1,10 @@
 package maow.javasdf.attribute.types;
 
 import maow.javasdf.attribute.AbstractAttribute;
-import maow.javasdf.attribute.Attribute;
 import maow.javasdf.io.SDFReader;
 import maow.javasdf.io.SDFWriter;
 
 import java.io.IOException;
-import java.util.List;
 
 public class BasicAttribute extends AbstractAttribute {
     public BasicAttribute(String name) {
@@ -23,9 +21,9 @@ public class BasicAttribute extends AbstractAttribute {
     }
 
     @Override
-    public void read(SDFReader reader, List<Attribute> attributes) {
+    public void read(SDFReader reader) {
         reader.resetNestedTree();
         reader.setActiveAttribute(this);
-        attributes.add(this);
+        reader.addAttribute(this);
     }
 }

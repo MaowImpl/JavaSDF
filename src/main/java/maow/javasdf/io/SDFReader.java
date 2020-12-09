@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 public class SDFReader extends BufferedReader {
     private final List<String> lines = getLinesAsList();
     private final List<ParentAttribute> nestedTree = new ArrayList<>();
+    private final List<Attribute> attributes = new ArrayList<>();
 
     private int headerEnd = 0;
     private int nestLevel = 0;
@@ -31,11 +32,12 @@ public class SDFReader extends BufferedReader {
         super(in);
     }
 
-    public Document getDocument() throws IOException {
-        return new Document(getDocumentName(), getRootInnerAttributes(), getAttributes());
+    public Document readDocument() throws IOException {
+        attributes.clear();
+        return new Document(readDocumentName(), readRootInnerAttributes(), readAttributes());
     }
 
-    public String getDocumentName() throws IOException {
+    public String readDocumentName() throws IOException {
         final String name = lines.get(0);
         if (name.startsWith(";") || name.startsWith(".") || name.startsWith("!") || name.startsWith("-")) {
             throw new IOException("Illegal prefix for document name.");
@@ -43,7 +45,7 @@ public class SDFReader extends BufferedReader {
         return name;
     }
 
-    public List<InnerAttribute> getRootInnerAttributes() {
+    public List<InnerAttribute> readRootInnerAttributes() {
         final List<InnerAttribute> rootInnerAttributes = new ArrayList<>();
         for (int i = 1; i < lines.size(); i++) {
             final String line = lines.get(i);
@@ -56,15 +58,24 @@ public class SDFReader extends BufferedReader {
         return rootInnerAttributes;
     }
 
-    public List<Attribute> getAttributes() throws IOException {
-        final List<Attribute> attributes = new ArrayList<>();
+    public List<Attribute> readAttributes() throws IOException {
         for (int i = headerEnd + 1; i < lines.size(); i++) {
             final Attribute attribute = getAttribute(i);
             if (attribute != null) {
-                attribute.read(this, attributes);
+                populateAttributes(attribute);
             }
         }
         return attributes;
+    }
+
+    public void addAttribute(Attribute attribute) {
+        attributes.add(attribute);
+    }
+
+    private void populateAttributes(Attribute... attributes) throws IOException {
+        for (Attribute attribute : attributes) {
+            attribute.read(this);
+        }
     }
 
     public void resetNestedTree() {

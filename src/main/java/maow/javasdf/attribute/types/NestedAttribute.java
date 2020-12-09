@@ -1,11 +1,8 @@
 package maow.javasdf.attribute.types;
 
-import maow.javasdf.attribute.Attribute;
 import maow.javasdf.attribute.ParentAttribute;
 import maow.javasdf.io.SDFReader;
 import maow.javasdf.io.SDFWriter;
-
-import java.util.List;
 
 public class NestedAttribute extends ParentAttribute {
     public NestedAttribute(String name, String value) {
@@ -20,7 +17,7 @@ public class NestedAttribute extends ParentAttribute {
     public void write(SDFWriter writer) {}
 
     @Override
-    public void read(SDFReader reader, List<Attribute> attributes) {
+    public void read(SDFReader reader) {
         reader.addNestedAttribute(this);
     }
 }

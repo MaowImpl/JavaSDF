@@ -5,7 +5,6 @@ import maow.javasdf.io.SDFReader;
 import maow.javasdf.io.SDFWriter;
 
 import java.io.IOException;
-import java.util.List;
 
 public class InnerAttribute implements Attribute {
     private final String name;
@@ -42,7 +41,7 @@ public class InnerAttribute implements Attribute {
     }
 
     @Override
-    public void read(SDFReader reader, List<Attribute> attributes) {
+    public void read(SDFReader reader) {
         reader.addInnerAttribute(this);
     }
 }

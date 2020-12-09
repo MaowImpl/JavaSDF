@@ -9,7 +9,7 @@ import java.io.IOException;
 public class Test {
     public static void main(String[] args) throws IOException {
         final SDFReader sr = new SDFReader(new FileReader("Test.sdf"));
-        final Document sdf = sr.getDocument();
+        final Document sdf = sr.readDocument();
         sr.close();
 
         final SDFWriter sw = new SDFWriter(new FileWriter("TestWritten.sdf"));
